@@ -36,8 +36,7 @@ venv.bak/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Model files (large files)
-*.safetensors
+# Model files (exclude large files but keep important ones)
 *.bin
 *.pth
 *.pt
@@ -53,11 +52,12 @@ __pycache__/
 logs/
 *.log
 
-# Training results (keep structure but not large files)
-lora-rinna-3.6b-results/
-lora-rinna-3.6b-results-optimized/
-lora-rinna-3.6b/
-lora-rinna-3.6b-optimized/
+# Keep important model and results directories
+# (commented out to include them)
+# lora-rinna-3.6b-results/
+# lora-rinna-3.6b-results-optimized/ 
+# lora-rinna-3.6b/
+# lora-rinna-3.6b-optimized/
 
 # OS
 .DS_Store
