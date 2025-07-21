@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model files (large files)
+*.safetensors
+*.bin
+*.pth
+*.pt
+*.ckpt
+*.model
+
+# Cache directories
+cache/
+.cache/
+__pycache__/
+
+# Logs
+logs/
+*.log
+
+# Training results (keep structure but not large files)
+lora-rinna-3.6b-results/
+lora-rinna-3.6b-results-optimized/
+lora-rinna-3.6b/
+lora-rinna-3.6b-optimized/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp 
