@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Info, Cpu, Database, Clock, Target } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Cpu, Database, Clock, Target, CheckCircle, AlertCircle } from 'lucide-react';
 
-export function ModelInfo() {
+interface ModelInfoProps {
+  apiStatus: 'checking' | 'online' | 'offline';
+  useRealAPI: boolean;
+}
+
+export function ModelInfo({ apiStatus, useRealAPI }: ModelInfoProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -13,6 +18,16 @@ export function ModelInfo() {
         <div className="flex items-center space-x-2">
           <Info className="w-4 h-4 text-blue-600" />
           <span className="font-medium text-gray-900">モデル情報</span>
+          {apiStatus === 'online' && (
+            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+              実モデル稼働中
+            </span>
+          )}
+          {apiStatus === 'offline' && (
+            <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+              デモ版
+            </span>
+          )}
         </div>
         {isExpanded ? (
           <ChevronUp className="w-4 h-4 text-gray-500" />
@@ -59,8 +74,13 @@ export function ModelInfo() {
           
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>注意:</strong> これはデモ版です。実際のRinna-3.6Bモデルは大量のVRAM（14GB以上）を必要とするため、
-              本格的な利用にはGPU環境での実行が必要です。
+              <strong>
+                {useRealAPI ? '実モデル稼働中:' : 'デモ版:'}
+              </strong> 
+              {useRealAPI 
+                ? '学習済みRinna-3.6B LoRAモデルが稼働しています。GPU環境で実際の推論を実行中です。'
+                : '実際のRinna-3.6Bモデルは大量のVRAM（14GB以上）を必要とするため、デモ版で動作を再現しています。'
+              }
             </p>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Github, ExternalLink } from 'lucide-react';
+import { Send, Bot, User, Loader2, Github, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
 import { ChatMessage } from './components/ChatMessage';
 import { ModelInfo } from './components/ModelInfo';
+import { rinnaAPI } from './services/api';
 import { mockRinnaAPI } from './services/mockAPI';
 import type { Message } from './types';
 
@@ -16,6 +17,8 @@ function App() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [useRealAPI, setUseRealAPI] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -26,6 +29,24 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
+  // API状態チェック
+  useEffect(() => {
+    const checkAPI = async () => {
+      try {
+        const isOnline = await rinnaAPI.healthCheck();
+        setApiStatus(isOnline ? 'online' : 'offline');
+        setUseRealAPI(isOnline);
+      } catch (error) {
+        setApiStatus('offline');
+        setUseRealAPI(false);
+      }
+    };
+
+    checkAPI();
+    // 30秒ごとにAPI状態をチェック
+    const interval = setInterval(checkAPI, 30000);
+    return () => clearInterval(interval);
+  }, []);
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -41,7 +62,22 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await mockRinnaAPI(input.trim());
+      let response: string;
+      
+      if (useRealAPI && apiStatus === 'online') {
+        // 実際のRinna-3.6B APIを使用
+        const apiResponse = await rinnaAPI.chat({
+          message: input.trim(),
+          max_tokens: 256,
+          temperature: 0.7,
+          top_p: 0.75,
+          top_k: 40
+        });
+        response = apiResponse.response;
+      } else {
+        // モックAPIを使用
+        response = await mockRinnaAPI(input.trim());
+      }
       
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -83,7 +119,26 @@ function App() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Rinna-3.6B 対話システム</h1>
-                <p className="text-sm text-gray-600">日本語特化型AI対話モデル</p>
+                <div className="flex items-center space-x-2">
+                  <p className="text-sm text-gray-600">日本語特化型AI対話モデル</p>
+                  <div className="flex items-center space-x-1">
+                    {apiStatus === 'checking' && (
+                      <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
+                    )}
+                    {apiStatus === 'online' && (
+                      <>
+                        <CheckCircle className="w-3 h-3 text-green-500" />
+                        <span className="text-xs text-green-600">実モデル</span>
+                      </>
+                    )}
+                    {apiStatus === 'offline' && (
+                      <>
+                        <AlertCircle className="w-3 h-3 text-orange-500" />
+                        <span className="text-xs text-orange-600">デモ版</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             <a
@@ -100,7 +155,7 @@ function App() {
         </header>
 
         {/* Model Info */}
-        <ModelInfo />
+        <ModelInfo apiStatus={apiStatus} useRealAPI={useRealAPI} />
 
         {/* Chat Area */}
         <div className="flex-1 overflow-hidden flex flex-col bg-white mx-4 rounded-t-lg shadow-lg">
@@ -111,7 +166,9 @@ function App() {
             {isLoading && (
               <div className="flex items-center space-x-2 text-gray-500">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">考え中...</span>
+                <span className="text-sm">
+                  {useRealAPI ? 'Rinna-3.6Bが考え中...' : '考え中...'}
+                </span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -143,6 +200,11 @@ function App() {
             <p className="text-xs text-gray-500 mt-2">
               Enter で送信、Shift + Enter で改行
             </p>
+            {apiStatus === 'offline' && (
+              <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700">
+                💡 実際のRinna-3.6Bモデルが利用できません。デモ版で動作中です。
+              </div>
+            )}
           </div>
         </div>
 
